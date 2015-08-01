@@ -39,10 +39,10 @@ class MsgAstNode(AstNode):
         self.args = args or []
 
     def __repr__(self):
-        return '<AstNode {target} {name} ({args})>'.format(
+        return '<MsgAstNode {target} {name} {args}>'.format(
             target=self.target,
             name=self.name,
-            args=len(self.args),
+            args=self.args,
         )
 
 
