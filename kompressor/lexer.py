@@ -1,6 +1,5 @@
 import re
 import enum
-import string
 
 
 class TokenType(enum.Enum):
@@ -36,7 +35,7 @@ class Lexer:
         TokenType.STRING: r'"(.*?)"',
         TokenType.SEMICOLON: r';',
     }
-        
+
     def __init__(self, source):
         self.source = source
         self.tokens = []
