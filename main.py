@@ -1,5 +1,7 @@
 from kompressor.io import IoState, IoMessage
-from kompressor.ast import Interpreter, MsgAstNode, ConstAstNode
+from kompressor.ast import Interpreter
+from kompressor.lexer import Lexer
+from kompressor.parser import Parser
 import kompressor.builtins
 
 
@@ -21,13 +23,12 @@ def main():
     io_string.set_slot('println', kompressor.builtins.Println())
     lobby.set_slot('String', io_string)
 
-    i.evaluate_ast_node(
-        MsgAstNode('self', 'setSlot', [ConstAstNode('x'), MsgAstNode('String', 'clone')])
-    )
-    i.evaluate_ast_node(
-        MsgAstNode('x', 'setSlot', [ConstAstNode('value'), ConstAstNode('Hello, world!')])
-    )
-    i.evaluate_ast_node(MsgAstNode(MsgAstNode('Lobby', 'x'), 'println'))
+    while True:
+        source_line = input('>>>')
+        tokens = Lexer(source_line).iter_match_tokens()
+        ast_root = Parser(list(tokens)).program()
+
+        i.evaluate_ast_node(ast_root)
 
 
 if __name__ == '__main__':
