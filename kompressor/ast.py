@@ -1,18 +1,27 @@
-from kompressor.io import IoState, IoMessage
+import enum
+from kompressor.io import IoMessage
 
 
 class Interpreter:
-    def __init__(self):
-        pass
+    def __init__(self, state):
+        self.state = state
 
     def evaluate_ast_node(self, node):
         if isinstance(node, str):
-            return IoState.resolve_name(node)
+            return self.state.resolve_name(node)
 
         if isinstance(node, ConstAstNode):
-            return node.const_value
+            if node.const_type == ConstType.STRING:
+                string_clone = self.state.root.get_slot('String').clone()
+                string_clone.value = node.const_value
+                return string_clone
 
-        sender = IoState.current_context()
+            elif node.const_type == ConstType.INT:
+                string_clone = self.state.root.get_slot('Int').clone()
+                string_clone.value = node.const_value
+                return string_clone
+
+        sender = self.state.current_context()
         target = self.evaluate_ast_node(node.target)
 
         # Recursively evaluate this node's arguments, which are themselves
@@ -20,7 +29,7 @@ class Interpreter:
         resolved_args = [self.evaluate_ast_node(arg) for arg in node.args]
 
         message = IoMessage(sender, target, node.name, resolved_args)
-        return IoState.evaluate(message)
+        return self.state.evaluate(message)
 
 
 class AstNode:
@@ -47,9 +56,15 @@ class MsgAstNode(AstNode):
 
 
 class ConstAstNode(AstNode):
-    def __init__(self, const_value):
+    def __init__(self, const_type, const_value):
         super(ConstAstNode, self).__init__()
+        self.const_type = const_type
         self.const_value = const_value
 
     def __repr__(self):
-        return '<ConstAstNode {}>'.format(self.const_value)
+        return '<ConstAstNode {} {}>'.format(self.const_type, self.const_value)
+
+
+class ConstType(enum.Enum):
+    STRING = 0
+    INT = 1

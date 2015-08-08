@@ -2,85 +2,6 @@ class IoRuntimeError(Exception):
     pass
 
 
-class IoObject:
-    """
-    IoObject represents any Object in the runtime
-    """
-    def __init__(self):
-        self.ident = id(self)
-        self.slots = {
-            'clone': IoObject.builtin_clone,
-            'setSlot': IoObject.builtin_set_slot,
-        }
-        self.proto = None
-
-    def get_slot(self, name):
-        return self.slots.get(name)
-
-    def set_slot(self, name, value):
-        self.slots[name] = value
-
-    def clone(self):
-        clone = IoObject()
-        clone.proto = self
-        clone.slots = dict(self.slots)
-        return clone
-
-    @classmethod
-    def builtin_clone(self):
-        return self.clone()
-
-    @classmethod
-    def builtin_set_slot(self):
-        message = IoState.current_frame()
-        slot_name = message.args[0]
-        slot_value = message.args[1]
-
-        # Grab the Python basestring value from the IoString `slot_name`
-        slot_name = slot_name.value
-
-        message.target.set_slot(slot_name, slot_value)
-        return slot_value
-
-    def __repr__(self):
-        return '<IoObject {}>'.format(self.ident)
-
-
-class IoString(IoObject):
-    """
-    Builtin Object type: IoString is a primitive Object type representing
-    a Unicode string
-    """
-    def __init__(self, default=None):
-        super(IoString, self).__init__()
-        self.value = default or u''
-        self.slots.update({
-            'println': IoString.builtin_println,
-        })
-
-    @classmethod
-    def builtin_println(self):
-        message = IoState.current_frame()
-        value = message.target.value
-        print(value)
-        return value
-
-    def __repr__(self):
-        return u'<IoString {}>'.format(self.value)
-
-
-class IoInt(IoObject):
-    """
-    Builtin Object type: IoObject wrapper for an integer
-    """
-    def __init__(self, default=None):
-        super(IoInt, self).__init__()
-        self.value = default or 0
-
-    def __repr__(self):
-        return u'<IoInt {}>'.format(self.value)
-
-
 class IoMessage:
     """
     IoMessage represents an in-progress (or past) message pass action
@@ -92,11 +13,11 @@ class IoMessage:
         self.args = args or []
 
 
-class _IoState:
-    def __init__(self):
+class IoState:
+    def __init__(self, root_object):
         # The `root` is the IoObject of which all other objects
         # will be clones
-        self.root = IoObject()
+        self.root = root_object
 
         # Initialize the call stack, i.e. the stack of message passes
         self.stack = []
@@ -138,6 +59,3 @@ class _IoState:
 
         self.pop_frame()
         return slot_value
-
-
-IoState = _IoState()

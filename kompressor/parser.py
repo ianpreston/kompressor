@@ -1,6 +1,5 @@
 from kompressor.lexer import TokenType
-from kompressor.ast import MsgAstNode, ConstAstNode
-from kompressor.io import IoString, IoInt
+from kompressor.ast import MsgAstNode, ConstAstNode, ConstType
 
 
 def autoresolve(meth):
@@ -74,10 +73,12 @@ class Parser:
 
     def const_string(self):
         return ConstAstNode(
-            IoString(self.expect(TokenType.STRING).value)
+            ConstType.STRING,
+            self.expect(TokenType.STRING).value,
         )
 
     def const_int(self):
         return ConstAstNode(
-            IoInt(self.expect(TokenType.INT).value)
+            ConstType.INT,
+            int(self.expect(TokenType.INT).value),
         )
