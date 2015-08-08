@@ -10,7 +10,8 @@ class TokenType(enum.Enum):
     RPAREN = 3
     COMMA = 4
     STRING = 5
-    SEMICOLON = 6
+    INT = 6
+    SEMICOLON = 8
 
 
 class Token:
@@ -33,6 +34,7 @@ class Lexer:
         TokenType.RPAREN: r'\)',
         TokenType.COMMA: r',',
         TokenType.STRING: r'"(.*?)"',
+        TokenType.INT: r'[0-9]+',
         TokenType.SEMICOLON: r';',
     }
 

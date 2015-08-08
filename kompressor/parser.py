@@ -1,5 +1,6 @@
 from kompressor.lexer import TokenType
 from kompressor.ast import MsgAstNode, ConstAstNode
+from kompressor.io import IoString, IoInt
 
 
 def autoresolve(meth):
@@ -41,7 +42,7 @@ class Parser:
         if self.peek(TokenType.IDENT):
             return self.message_pass()
 
-        return self.const_string()
+        return self.const()
 
     def message_pass(self):
         target = self.expect(TokenType.IDENT)
@@ -65,7 +66,18 @@ class Parser:
 
         self.expect(TokenType.RPAREN)
 
+    def const(self):
+        if self.peek(TokenType.STRING):
+            return self.const_string()
+        else:
+            return self.const_int()
+
     def const_string(self):
         return ConstAstNode(
-            self.expect(TokenType.STRING).value
+            IoString(self.expect(TokenType.STRING).value)
+        )
+
+    def const_int(self):
+        return ConstAstNode(
+            IoInt(self.expect(TokenType.INT).value)
         )
