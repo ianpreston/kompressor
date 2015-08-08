@@ -11,6 +11,7 @@ class TokenType(enum.Enum):
     COMMA = 4
     STRING = 5
     INT = 6
+    ASSIGNMENT = 7
     SEMICOLON = 8
 
 
@@ -35,6 +36,7 @@ class Lexer:
         TokenType.COMMA: r',',
         TokenType.STRING: r'"(.*?)"',
         TokenType.INT: r'[0-9]+',
+        TokenType.ASSIGNMENT: ':=',
         TokenType.SEMICOLON: r';',
     }
 
