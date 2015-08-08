@@ -8,7 +8,10 @@ class IoObject:
     """
     def __init__(self):
         self.ident = id(self)
-        self.slots = {}
+        self.slots = {
+            'clone': IoObject.builtin_clone,
+            'setSlot': IoObject.builtin_set_slot,
+        }
         self.proto = None
 
     def get_slot(self, name):
@@ -23,16 +26,59 @@ class IoObject:
         clone.slots = dict(self.slots)
         return clone
 
+    @classmethod
+    def builtin_clone(self):
+        return self.clone()
+
+    @classmethod
+    def builtin_set_slot(self):
+        message = IoState.current_frame()
+        slot_name = message.args[0]
+        slot_value = message.args[1]
+
+        # Grab the Python basestring value from the IoString `slot_name`
+        slot_name = slot_name.value
+
+        message.target.set_slot(slot_name, slot_value)
+        return slot_value
+
     def __repr__(self):
         return '<IoObject {}>'.format(self.ident)
 
 
-class IoMethod:
+class IoString(IoObject):
     """
-    IoMethod is a special, builtin type of Object that is able to be activated
+    Builtin Object type: IoString is a primitive Object type representing
+    a Unicode string
     """
-    def activate(self):
-        return
+    def __init__(self, default=None):
+        super(IoString, self).__init__()
+        self.value = default or u''
+        self.slots.update({
+            'println': IoString.builtin_println,
+        })
+
+    @classmethod
+    def builtin_println(self):
+        message = IoState.current_frame()
+        value = message.target.value
+        print(value)
+        return value
+
+    def __repr__(self):
+        return u'<IoString {}>'.format(self.value)
+
+
+class IoInt(IoObject):
+    """
+    Builtin Object type: IoObject wrapper for an integer
+    """
+    def __init__(self, default=None):
+        super(IoInt, self).__init__()
+        self.value = default or 0
+
+    def __repr__(self):
+        return u'<IoInt {}>'.format(self.value)
 
 
 class IoMessage:
@@ -83,10 +129,12 @@ class _IoState:
 
         slot_value = message.target.get_slot(message.name)
         if not slot_value:
-            raise IoRuntimeError('Slot does not exist on target', message)
+            raise IoRuntimeError('Slot does not exist on target', message.name, message.target)
 
         if hasattr(slot_value, 'activate'):
             slot_value = slot_value.activate()
+        if hasattr(slot_value, '__call__'):
+            slot_value = slot_value()
 
         self.pop_frame()
         return slot_value
