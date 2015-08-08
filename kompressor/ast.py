@@ -9,7 +9,7 @@ class Interpreter:
     def evaluate_const_ast_node(self, node):
         """
         Resolve constant expressions by cloning one of the built-in
-        types, such as String or Int.
+        types, such as `String` or `Int`.
         """
         if node.const_type == ConstType.STRING:
             string_clone = self.state.resolve_name('String').clone()
@@ -21,13 +21,24 @@ class Interpreter:
             int_clone.value = node.const_value
             return int_clone
 
-    def evaluate_ast_node(self, node):
-        if isinstance(node, str):
-            return self.state.resolve_name(node)
+    def evaluate_assign_ast_node(self, node):
+        """
+        Compile assignments into `setSlot` messages
+        """
+        msg_node = MsgAstNode(
+            target='self',
+            name='setSlot',
+            args=[
+                node.ident,
+                node.value,
+            ]
+        )
+        return self.evaluate_msg_ast_node(msg_node)
 
-        if isinstance(node, ConstAstNode):
-            return self.evaluate_const_ast_node(node)
-
+    def evaluate_msg_ast_node(self, node):
+        """
+        Evaluate message pass expressions with IoState.evaluate()
+        """
         sender = self.state.current_context()
         target = self.evaluate_ast_node(node.target)
 
@@ -37,6 +48,19 @@ class Interpreter:
 
         message = IoMessage(sender, target, node.name, resolved_args)
         return self.state.evaluate(message)
+
+    def evaluate_ast_node(self, node):
+        if isinstance(node, str):
+            return self.state.resolve_name(node)
+
+        elif isinstance(node, ConstAstNode):
+            return self.evaluate_const_ast_node(node)
+
+        elif isinstance(node, AssignAstNode):
+            return self.evaluate_assign_ast_node(node)
+
+        else:
+            return self.evaluate_msg_ast_node(node)
 
 
 class AstNode:
@@ -60,6 +84,13 @@ class MsgAstNode(AstNode):
             name=self.name,
             args=self.args,
         )
+
+
+class AssignAstNode(AstNode):
+    def __init__(self, ident, value):
+        super(AssignAstNode, self).__init__()
+        self.ident = ident
+        self.value = value
 
 
 class ConstAstNode(AstNode):
