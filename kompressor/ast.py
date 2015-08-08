@@ -6,20 +6,27 @@ class Interpreter:
     def __init__(self, state):
         self.state = state
 
+    def evaluate_const_ast_node(self, node):
+        """
+        Resolve constant expressions by cloning one of the built-in
+        types, such as String or Int.
+        """
+        if node.const_type == ConstType.STRING:
+            string_clone = self.state.resolve_name('String').clone()
+            string_clone.value = node.const_value
+            return string_clone
+
+        elif node.const_type == ConstType.INT:
+            int_clone = self.state.resolve_name('Int').clone()
+            int_clone.value = node.const_value
+            return int_clone
+
     def evaluate_ast_node(self, node):
         if isinstance(node, str):
             return self.state.resolve_name(node)
 
         if isinstance(node, ConstAstNode):
-            if node.const_type == ConstType.STRING:
-                string_clone = self.state.root.get_slot('String').clone()
-                string_clone.value = node.const_value
-                return string_clone
-
-            elif node.const_type == ConstType.INT:
-                string_clone = self.state.root.get_slot('Int').clone()
-                string_clone.value = node.const_value
-                return string_clone
+            return self.evaluate_const_ast_node(node)
 
         sender = self.state.current_context()
         target = self.evaluate_ast_node(node.target)
