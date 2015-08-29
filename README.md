@@ -1,11 +1,11 @@
-# kompressor
+# Sol
 
-Kompressor is a prototype language based on [Io Language](http://iolanguage.org/).
+Sol is a prototype language based on [Io Language](http://iolanguage.org/).
 
 ## Install & run
 
-    $ git clone https://github.com/ianpreston/kompressor
-    $ cd kompressor
+    $ git clone https://github.com/ianpreston/sol
+    $ cd sol
     $ python main.py
 
 

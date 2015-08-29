@@ -1,9 +1,9 @@
-from kompressor.io import IoState, IoMessage
-from kompressor.object import IoObject
-from kompressor.ast import Interpreter
-from kompressor.lexer import Lexer
-from kompressor.parser import Parser
-from kompressor.builtin import apply_builtins
+from sol.io import IoState, IoMessage
+from sol.object import IoObject
+from sol.ast import Interpreter
+from sol.lexer import Lexer
+from sol.parser import Parser
+from sol.builtin import apply_builtins
 
 
 def main():

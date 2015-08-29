@@ -1,5 +1,5 @@
 import enum
-from kompressor.io import IoMessage
+from sol.io import IoMessage
 
 
 class Interpreter:

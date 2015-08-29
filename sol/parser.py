@@ -1,5 +1,5 @@
-from kompressor.lexer import TokenType
-from kompressor.ast import (
+from sol.lexer import TokenType
+from sol.ast import (
     MsgAstNode,
     AssignAstNode,
     ConstAstNode,
