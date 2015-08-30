@@ -12,7 +12,7 @@ Sol is a prototype language based on [Io Language](http://iolanguage.org/).
 ## Hello world
 
     >>> x := "Hello, world!"
-    >>> x println
+    >>> x.println
     Hello, world!
 
 
