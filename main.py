@@ -1,3 +1,4 @@
+import traceback
 from sol.io import IoState, IoMessage
 from sol.object import IoObject
 from sol.ast import Interpreter
@@ -9,7 +10,7 @@ from sol.builtin import apply_builtins
 def main():
     root = IoObject()
     state = IoState(root)
-    i = Interpreter(state)
+    runtime = Interpreter(state)
 
     # Bootstrap builtin objects and slots
     apply_builtins(state)
@@ -24,10 +25,13 @@ def main():
 
     while True:
         source_line = input('>>>')
-        tokens = Lexer(source_line).iter_match_tokens()
-        ast_root = Parser(list(tokens)).program()
+        try:
+            tokens = Lexer(source_line).iter_match_tokens()
 
-        i.evaluate_ast_node(ast_root)
+            ast_root = Parser(list(tokens)).program()
+            runtime.evaluate_ast_node(ast_root)
+        except:
+            traceback.print_exc()
 
 
 if __name__ == '__main__':
