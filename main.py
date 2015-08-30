@@ -1,10 +1,10 @@
 import traceback
 from sol.io import IoState, IoMessage
 from sol.object import IoObject
-from sol.ast import Interpreter
 from sol.lexer import Lexer
 from sol.parser import Parser
 from sol.builtin import apply_builtins
+from sol.interpreter import Interpreter
 
 
 def main():
