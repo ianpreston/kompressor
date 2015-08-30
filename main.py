@@ -18,6 +18,7 @@ def main():
     lobby = root.clone()
     root.set_slot('Object', root)
     root.set_slot('Lobby', lobby)
+    lobby.set_slot('Object', root)
     lobby.set_slot('Lobby', lobby)
     state.push_frame(IoMessage(lobby, lobby, None))
 
