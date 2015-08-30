@@ -4,15 +4,16 @@ import enum
 
 class TokenType(enum.Enum):
     INVALID = -1
-    IGNORE = 0
-    IDENT = 1
-    LPAREN = 2
-    RPAREN = 3
-    COMMA = 4
-    STRING = 5
-    INT = 6
-    ASSIGNMENT = 7
-    SEMICOLON = 8
+    (IGNORE,
+     PASS,
+     IDENT,
+     LPAREN,
+     RPAREN,
+     COMMA,
+     STRING,
+     INT,
+     ASSIGNMENT,
+     SEMICOLON) = range(10)
 
 
 class Token:
@@ -30,7 +31,8 @@ class Token:
 class Lexer:
     token_map = {
         TokenType.IGNORE: r' ',
-        TokenType.IDENT: r'\w+',
+        TokenType.IDENT: r'[a-zA-Z][A-Za-z0-9_]*',
+        TokenType.PASS: r'\.',
         TokenType.LPAREN: r'\(',
         TokenType.RPAREN: r'\)',
         TokenType.COMMA: r',',

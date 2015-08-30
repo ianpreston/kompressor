@@ -1,16 +1,11 @@
 from sol.lexer import TokenType
 from sol.ast import (
+    IdentAstNode,
     MsgAstNode,
     AssignAstNode,
     ConstAstNode,
     ConstType,
 )
-
-
-def autoresolve(meth):
-    def wrapper(*args, **kwargs):
-        return list(meth(*args, **kwargs))
-    return wrapper
 
 
 class Parser:
@@ -24,80 +19,101 @@ class Parser:
             return None
         return self.tokens[self.idx]
 
+    @property
+    def last_token(self):
+        return self.tokens[self.idx-1]
+
     def advance(self):
-        token = self.token
         self.idx += 1
-        return token
-
-    def expect(self, token_type):
-        if not self.peek(token_type):
-            raise Exception('Parse error: Unexpected token', self.token.type, token_type)
-        return self.advance()
-
-    def peek(self, token_type):
-        if self.token is None:
-            return False
-        return self.token.type == token_type
 
     def program(self):
         return self.expr()
 
-    def expr(self):
-        if self.peek(TokenType.IDENT):
-            left_token = self.expect(TokenType.IDENT)
+    def nud(self, token):
+        if token.type == TokenType.IDENT:
+            return IdentAstNode(token.value)
 
-            if self.peek(TokenType.IDENT):
-                return self.expr_message_pass(left_token)
-            else:
-                return self.expr_assignment(left_token)
+        if token.type == TokenType.STRING:
+            return ConstAstNode(ConstType.STRING, token.value)
 
-        else:
-            return self.expr_const()
+        if token.type == TokenType.INT:
+            return ConstAstNode(ConstType.INT, int(token.value))
 
-    def expr_message_pass(self, target):
-        name = self.expect(TokenType.IDENT)
+        if token.type == TokenType.SEMICOLON:
+            return 'EOF'
 
+        raise Exception('Invalid token for nud()', token)
+
+    def led(self, left, token):
+        # TODO - Registrar/map
+
+        if token.type in (
+            TokenType.IDENT,
+            TokenType.STRING,
+            TokenType.INT,
+            TokenType.SEMICOLON,
+        ):
+            return left
+
+        if token.type == TokenType.PASS:
+            expr = self.expr(self.lbp(token))
+            return MsgAstNode(
+                target=left,
+                name=expr,
+                args=None,
+            )
+
+        if token.type == TokenType.ASSIGNMENT:
+            expr = self.expr(self.lbp(token))
+            return AssignAstNode(left, expr)
+
+        if token.type == TokenType.LPAREN:
+            return self.led_arg_list(left, token)
+
+        if token.type == TokenType.RPAREN:
+            return left
+
+        raise Exception('Invalid token for led()', token)
+
+    def lbp(self, token):
+        # TODO - Registrar/map
+
+        if token.type == TokenType.PASS:
+            return 10
+        if token.type == TokenType.ASSIGNMENT:
+            return 9
+        if token.type == TokenType.IDENT:
+            return 8
+        if token.type in (TokenType.STRING, TokenType.INT):
+            return 7
+        if token.type == TokenType.SEMICOLON:
+            return 0
+        return 1
+
+    def expr(self, rbp=0):
+        left = self.nud(self.token)
+        while rbp < self.lbp(self.token):
+            self.advance()
+            if not self.token:
+                return left
+            left = self.led(left, self.last_token)
+        return left
+
+    def led_arg_list(self, left, token):
         args = []
-        if self.peek(TokenType.LPAREN):
-            args = self.message_arg_list()
-
-        return MsgAstNode(target.value, name.value, args)
-
-    @autoresolve
-    def message_arg_list(self):
-        self.expect(TokenType.LPAREN)
 
         while True:
-            yield self.expression()
-            if not self.peek(TokenType.COMMA):
+            expr = self.expr(self.lbp(token))
+            args.append(expr)
+
+            if self.token.type == TokenType.RPAREN:
                 break
-            self.expect(TokenType.COMMA)
 
-        self.expect(TokenType.RPAREN)
+            if self.token.type == TokenType.COMMA:
+                self.advance()
+                continue
 
-    def expr_assignment(self, ident):
-        self.expect(TokenType.ASSIGNMENT)
-        value = self.expr()
+            raise Exception('Invalid token in led_arg_list()', self.token)
 
-        return AssignAstNode(
-            ConstAstNode(ConstType.STRING, ident.value),
-            value,
-        )
-
-    def expr_const(self):
-        if self.peek(TokenType.STRING):
-            return self.const_string()
-        else:
-            return self.const_int()
-
-    def const_string(self):
-        return ConstAstNode(
-            ConstType.STRING,
-            self.expect(TokenType.STRING).value,
-        )
-
-    def const_int(self):
-        return ConstAstNode(
-            ConstType.INT,
-            int(self.expect(TokenType.INT).value),
-        )
+        left.args = args
+        return left

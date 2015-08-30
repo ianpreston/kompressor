@@ -21,16 +21,22 @@ class Interpreter:
             int_clone.value = node.const_value
             return int_clone
 
+    def evaluate_ident_ast_node(self, node):
+        return node.ident
+
     def evaluate_assign_ast_node(self, node):
         """
         Compile assignments into `setSlot` messages
         """
         msg_node = MsgAstNode(
-            target='self',
-            name='setSlot',
+            target=IdentAstNode('self'),
+            name=IdentAstNode('setSlot'),
             args=[
-                node.ident,
-                node.value,
+                ConstAstNode(
+                    ConstType.STRING,
+                    self.evaluate_ident_ast_node(node.left)
+                ),
+                node.right,
             ]
         )
         return self.evaluate_msg_ast_node(msg_node)
@@ -41,17 +47,20 @@ class Interpreter:
         """
         sender = self.state.current_context()
         target = self.evaluate_ast_node(node.target)
+        name = self.evaluate_ident_ast_node(node.name)
 
         # Recursively evaluate this node's arguments, which are themselves
         # message pass expressions
         resolved_args = [self.evaluate_ast_node(arg) for arg in node.args]
 
-        message = IoMessage(sender, target, node.name, resolved_args)
+        message = IoMessage(sender, target, name, resolved_args)
         return self.state.evaluate(message)
 
     def evaluate_ast_node(self, node):
-        if isinstance(node, str):
-            return self.state.resolve_name(node)
+        if isinstance(node, IdentAstNode):
+            return self.state.resolve_name(
+                self.evaluate_ident_ast_node(node)
+            )
 
         elif isinstance(node, ConstAstNode):
             return self.evaluate_const_ast_node(node)
@@ -86,11 +95,25 @@ class MsgAstNode(AstNode):
         )
 
 
-class AssignAstNode(AstNode):
-    def __init__(self, ident, value):
-        super(AssignAstNode, self).__init__()
+class IdentAstNode(AstNode):
+    def __init__(self, ident):
         self.ident = ident
-        self.value = value
+
+    def __repr__(self):
+        return '<IdentAstNode {ident}>'.format(ident=self.ident)
+
+
+class AssignAstNode(AstNode):
+    def __init__(self, left, right):
+        super(AssignAstNode, self).__init__()
+        self.left = left
+        self.right = right
+
+    def __repr__(self):
+        return '<AssignAstNode {left} := {right}>'.format(
+            left=self.left,
+            right=self.right,
+        )
 
 
 class ConstAstNode(AstNode):
