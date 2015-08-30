@@ -1,8 +1,9 @@
 def apply_builtins(state):
+    patch_object(state.root, state)
+
     io_string = state.root.clone()
     io_int = state.root.clone()
 
-    patch_object(state.root, state)
     patch_string(io_string, state)
     patch_int(io_int, state)
 
