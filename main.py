@@ -2,7 +2,7 @@ import traceback
 from sol.io import IoState, IoMessage
 from sol.object import IoObject
 from sol.lexer import Lexer
-from sol.parser import Parser
+from sol.parser import SolParser
 from sol.builtin import apply_builtins
 from sol.interpreter import Interpreter
 
@@ -28,7 +28,7 @@ def main():
         try:
             tokens = Lexer(source_line).iter_match_tokens()
 
-            ast_root = Parser(list(tokens)).program()
+            ast_root = SolParser(list(tokens)).program()
             runtime.evaluate_ast_node(ast_root)
         except:
             traceback.print_exc()
