@@ -23,7 +23,7 @@ class Codegen:
             return SolCodePass(SolCodeConst('String'), 'new', [SolCodeConst(node.const_value)])
 
         elif node.const_type == ConstType.INT:
-            return SolCodePass(SolCodeConst('Int'), 'new', [SolCodeConst(node.const_value)])
+            return SolCodePass(SolCodeConst('Int'), 'new', [SolCodeConst(int(node.const_value))])
 
     def evaluate_ident_ast_node(self, node):
         return SolCodeConst(node.ident)

@@ -56,4 +56,20 @@ def patch_string(io_string, state):
 
 
 def patch_int(io_int, state):
-    pass
+    def builtin_new():
+        message = state.current_frame()
+        value = message.args[0]
+
+        clone = message.target.clone()
+        clone.value = value
+        return clone
+
+    def builtin_debug():
+        value = state.current_frame().target.value
+        print(value+5)
+        return value
+
+    io_int.slots.update({
+        'new': builtin_new,
+        'debug': builtin_debug,
+    })
