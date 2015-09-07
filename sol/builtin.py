@@ -27,10 +27,7 @@ def patch_object(io_object, state):
 
     def builtin_clone():
         target = state.current_frame().target
-        clone = target.clone()
-        clone.proto = target
-        clone.slots = dict(target.slots)
-        return clone
+        return target.clone()
 
     io_object.slots.update({
         'clone': builtin_clone,
@@ -44,8 +41,17 @@ def patch_string(io_string, state):
         print(value)
         return value
 
+    def builtin_new():
+        message = state.current_frame()
+        value = message.args[0]
+
+        clone = message.target.clone()
+        clone.value = value
+        return clone
+
     io_string.slots.update({
         'println': println,
+        'new': builtin_new,
     })
 
 
