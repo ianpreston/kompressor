@@ -24,12 +24,31 @@ class SolCodePass(SolCode):
         return '<SolCodePass {self.target}.{self.name}({self.args})>'.format(self=self)
 
 
-class SolCodeConst(SolCode):
+class SolCodeIdent(SolCode):
+    """
+    Represents an identifier
+    """
+    def __init__(self, ident):
+        self.ident = ident
+
+    def __repr__(self):
+        return '<SolCodeIdent {self.ident}>'.format(self=self)
+
+
+class SolCodeString(SolCode):
     def __init__(self, const_value):
         self.const_value = const_value
 
     def __repr__(self):
-        return '<SolCodeConst {self.const_value}>'.format(self=self)
+        return 's"{self.const_value}"'.format(self=self)
+
+
+class SolCodeInt(SolCode):
+    def __init__(self, const_value):
+        self.const_value = const_value
+
+    def __repr__(self):
+        return 'i"{self.const_value}"'.format(self=self)
 
 
 class SolCodeBlock(SolCode):

@@ -7,7 +7,9 @@ from sol.ast import (
 )
 from sol.code import (
     SolCodePass,
-    SolCodeConst,
+    SolCodeIdent,
+    SolCodeString,
+    SolCodeInt,
 )
 
 
@@ -20,21 +22,21 @@ class Codegen:
         Resolve constant expressions into String.new or Int.new calls
         """
         if node.const_type == ConstType.STRING:
-            return SolCodePass(SolCodeConst('String'), 'new', [SolCodeConst(node.const_value)])
+            return SolCodePass(SolCodeIdent('String'), 'new', [SolCodeString(node.const_value)])
 
         elif node.const_type == ConstType.INT:
-            return SolCodePass(SolCodeConst('Int'), 'new', [SolCodeConst(int(node.const_value))])
+            return SolCodePass(SolCodeIdent('Int'), 'new', [SolCodeInt(int(node.const_value))])
 
     def evaluate_ident_ast_node(self, node):
-        return SolCodeConst(node.ident)
+        return SolCodeIdent(node.ident)
 
     def evaluate_assign_ast_node(self, node):
         # Compile assignments into `setSlot` messages
         return SolCodePass(
-            target=SolCodeConst('self'),
+            target=SolCodeIdent('self'),
             name='setSlot',
             args=[
-                SolCodePass(SolCodeConst('String'), 'new', [SolCodeConst(node.left.ident)]),
+                SolCodePass(SolCodeIdent('String'), 'new', [SolCodeString(node.left.ident)]),
                 self.evaluate_ast_node(node.right),
             ],
         )

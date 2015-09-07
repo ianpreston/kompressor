@@ -1,8 +1,9 @@
-from sol.object import SolObject
 from sol.state import SolMessage
 from sol.code import (
     SolCodePass,
-    SolCodeConst,
+    SolCodeIdent,
+    SolCodeString,
+    SolCodeInt,
     SolCodeBlock,
 )
 
@@ -15,7 +16,9 @@ class Runtime:
         # TODO - Dat OOP doe
         if isinstance(code, SolCodePass):
             return self.evaluate_pass(code)
-        elif isinstance(code, SolCodeConst):
+        elif isinstance(code, SolCodeIdent):
+            return self.evaluate_ident(code)
+        elif isinstance(code, SolCodeString) or isinstance(code, SolCodeInt):
             return self.evaluate_const(code)
         elif isinstance(code, SolCodeBlock):
             return self.evaluate_block(code)
@@ -24,7 +27,7 @@ class Runtime:
 
     def evaluate_pass(self, code):
         sender = self.state.current_context()
-        target = self.resolve_pass_target(code.target)
+        target = self.evaluate(code.target)
         name = code.name
 
         resolved_args = [
@@ -35,14 +38,8 @@ class Runtime:
         message = SolMessage(sender, target, name, resolved_args)
         return self.state.evaluate(message)
 
-    def resolve_pass_target(self, target):
-        if isinstance(target, str):
-            return self.state.resolve_name(target)
-
-        if isinstance(target, SolObject):
-            return target
-
-        return self.resolve_pass_target(self.evaluate(target))
+    def evaluate_ident(self, code):
+        return self.state.resolve_name(code.ident)
 
     def evaluate_const(self, code):
         return code.const_value
