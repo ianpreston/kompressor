@@ -13,7 +13,8 @@ class TokenType(enum.Enum):
      STRING,
      INT,
      ASSIGNMENT,
-     SEMICOLON) = range(10)
+     SEMICOLON,
+     EOF) = range(11)
 
 
 class Token:
@@ -71,6 +72,7 @@ class Lexer:
         while True:
             token = self.match_token()
             if token is None:
+                yield Token(TokenType.EOF, None)
                 break
             if token.type == TokenType.IGNORE:
                 continue
