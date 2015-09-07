@@ -1,5 +1,5 @@
-from sol.object import IoObject
-from sol.io import IoMessage
+from sol.object import SolObject
+from sol.state import SolMessage
 from sol.code import (
     SolCodePass,
     SolCodeConst,
@@ -32,14 +32,14 @@ class Runtime:
             for arg in code.args
         ]
 
-        message = IoMessage(sender, target, name, resolved_args)
+        message = SolMessage(sender, target, name, resolved_args)
         return self.state.evaluate(message)
 
     def resolve_pass_target(self, target):
         if isinstance(target, str):
             return self.state.resolve_name(target)
 
-        if isinstance(target, IoObject):
+        if isinstance(target, SolObject):
             return target
 
         return self.resolve_pass_target(self.evaluate(target))

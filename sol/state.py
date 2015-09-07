@@ -1,11 +1,8 @@
-class IoRuntimeError(Exception):
+class SolRuntimeError(Exception):
     pass
 
 
-class IoMessage:
-    """
-    IoMessage represents an in-progress (or past) message pass action
-    """
+class SolMessage:
     def __init__(self, sender, target, name, args=None):
         self.sender = sender
         self.target = target
@@ -13,15 +10,15 @@ class IoMessage:
         self.args = args or []
 
 
-class IoState:
+class SolState:
     def __init__(self, root_object):
-        # The `root` is the IoObject of which all other objects
+        # The `root` is the SolObject of which all other objects
         # will be clones
         self.root = root_object
 
         # Initialize the call stack, i.e. the stack of message passes
         self.stack = []
-        self.push_frame(IoMessage(self.root, self.root, None))
+        self.push_frame(SolMessage(self.root, self.root, None))
 
     def push_frame(self, message):
         self.stack.append(message)
@@ -41,7 +38,7 @@ class IoState:
 
         resolved = self.current_context().get_slot(object_name)
         if resolved is None:
-            raise IoRuntimeError('Could not resolve name', object_name)
+            raise SolRuntimeError('Could not resolve name', object_name)
 
         return resolved
 
@@ -50,7 +47,7 @@ class IoState:
 
         slot_value = message.target.get_slot(message.name)
         if not slot_value:
-            raise IoRuntimeError('Slot does not exist on target', message.name, message.target)
+            raise SolRuntimeError('Slot does not exist on target', message.name, message.target)
 
         if hasattr(slot_value, 'activate'):
             slot_value = slot_value.activate()

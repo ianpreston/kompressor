@@ -26,24 +26,18 @@ class Codegen:
             return SolCodePass(SolCodeConst('Int'), 'new', [SolCodeConst(node.const_value)])
 
     def evaluate_ident_ast_node(self, node):
-        return node.ident
+        return SolCodeConst(node.ident)
 
     def evaluate_assign_ast_node(self, node):
-        """
-        Compile assignments into `setSlot` messages
-        """
-        msg_node = MsgAstNode(
-            target=IdentAstNode('self'),
-            name=IdentAstNode('setSlot'),
+        # Compile assignments into `setSlot` messages
+        return SolCodePass(
+            target=SolCodeConst('self'),
+            name='setSlot',
             args=[
-                ConstAstNode(
-                    ConstType.STRING,
-                    self.evaluate_ident_ast_node(node.left)
-                ),
-                node.right,
-            ]
+                SolCodePass(SolCodeConst('String'), 'new', [SolCodeConst(node.left.ident)]),
+                self.evaluate_ast_node(node.right),
+            ],
         )
-        return self.evaluate_msg_ast_node(msg_node)
 
     def evaluate_msg_ast_node(self, node):
         return SolCodePass(

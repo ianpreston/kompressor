@@ -1,6 +1,7 @@
-class IoObject:
+class SolObject:
     """
-    IoObject represents any Object in the runtime
+    All data in Sol is an instance of SolObject. SolObjects are created by calling
+    `clone()` on another SolObject.
     """
     def __init__(self):
         # The object from which this object was cloned
@@ -21,16 +22,16 @@ class IoObject:
     def set_slot(self, name, value):
         if not isinstance(name, str):
             raise Exception('Invalid name argument to set_slot:', name)
-        if not isinstance(value, IoObject):
+        if not isinstance(value, SolObject):
             raise Exception('Invalid value argument to set_slot:', value)
 
         self.slots[name] = value
 
     def clone(self):
-        clone = IoObject()
+        clone = SolObject()
         clone.proto = self
         clone.slots = dict(self.slots)
         return clone
 
     def __repr__(self):
-        return '<IoObject {}>'.format(self.value)
+        return '<SolObject {}>'.format(self.value)

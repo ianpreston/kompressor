@@ -1,6 +1,6 @@
 import traceback
-from sol.io import IoState, IoMessage
-from sol.object import IoObject
+from sol.state import SolState, SolMessage
+from sol.object import SolObject
 from sol.lexer import Lexer
 from sol.parser import SolParser
 from sol.builtin import apply_builtins
@@ -9,8 +9,8 @@ from sol.runtime import Runtime
 
 
 def main():
-    root = IoObject()
-    state = IoState(root)
+    root = SolObject()
+    state = SolState(root)
     codegen = Codegen()
     runtime = Runtime(state)
 
@@ -23,7 +23,7 @@ def main():
     root.set_slot('Lobby', lobby)
     lobby.set_slot('Object', root)
     lobby.set_slot('Lobby', lobby)
-    state.push_frame(IoMessage(lobby, lobby, None))
+    state.push_frame(SolMessage(lobby, lobby, None))
 
     while True:
         source_line = input('>>>')

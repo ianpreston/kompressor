@@ -19,7 +19,7 @@ def patch_object(io_object, state):
         slot_name = message.args[0]
         slot_value = message.args[1]
 
-        # Grab the Python basestring value from the IoObject `slot_name`
+        # Grab the Python basestring value from the SolObject `slot_name`
         slot_name = slot_name.value
 
         message.target.set_slot(slot_name, slot_value)
@@ -36,11 +36,6 @@ def patch_object(io_object, state):
 
 
 def patch_string(io_string, state):
-    def println():
-        value = state.current_frame().target.value
-        print(value)
-        return value
-
     def builtin_new():
         message = state.current_frame()
         value = message.args[0]
@@ -49,8 +44,13 @@ def patch_string(io_string, state):
         clone.value = value
         return clone
 
+    def builtin_println():
+        value = state.current_frame().target.value
+        print(value)
+        return value
+
     io_string.slots.update({
-        'println': println,
+        'println': builtin_println,
         'new': builtin_new,
     })
 

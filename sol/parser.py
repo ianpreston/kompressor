@@ -47,18 +47,12 @@ def led_assignment(parser, left, token):
     return AssignAstNode(left, expr)
 
 
-SolParser.register_token(
-    TokenType.PASS,
-    lbp=10,
-    nud=None,
-    led=led_pass,
-)
 
 SolParser.register_token(
-    TokenType.ASSIGNMENT,
+    TokenType.PASS,
     lbp=9,
     nud=None,
-    led=led_assignment,
+    led=led_pass,
 )
 
 SolParser.register_token(
@@ -69,15 +63,22 @@ SolParser.register_token(
 )
 
 SolParser.register_token(
-    TokenType.STRING,
+    TokenType.ASSIGNMENT,
     lbp=7,
+    nud=None,
+    led=led_assignment,
+)
+
+SolParser.register_token(
+    TokenType.STRING,
+    lbp=6,
     nud=(lambda token: ConstAstNode(ConstType.STRING, token.value)),
     led=(lambda parser, left, token: left),
 )
 
 SolParser.register_token(
     TokenType.INT,
-    lbp=7,
+    lbp=6,
     nud=(lambda token: ConstAstNode(ConstType.INT, token.value)),
     led=(lambda parser, left, token: left),
 )

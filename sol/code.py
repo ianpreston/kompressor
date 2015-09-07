@@ -11,14 +11,13 @@ class SolCodePass(SolCode):
     Represents a message pass expression
     """
     def __init__(self, target, name, args=None):
-        # Target of this message. Either a str (identifier) or a
-        # SolCode object that should be resolved to get the target.
+        # SolCode object representing how to get the target of this message
         self.target = target
 
-        # Name of the message to be passed (str)
+        # Name of the message to be passed to target (str)
         self.name = name
 
-        # List of arguments to this message pass, ([SolCode])
+        # List of arguments to this message pass as SolCode instances
         self.args = args or []
 
     def __repr__(self):
@@ -29,10 +28,8 @@ class SolCodeConst(SolCode):
     def __init__(self, const_value):
         self.const_value = const_value
 
-
-class SolCodeIdentifier(SolCode):
-    def __init__(self, identifier):
-        self.identifier = identifier
+    def __repr__(self):
+        return '<SolCodeConst {self.const_value}>'.format(self=self)
 
 
 class SolCodeBlock(SolCode):
