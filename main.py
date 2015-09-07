@@ -4,13 +4,15 @@ from sol.object import IoObject
 from sol.lexer import Lexer
 from sol.parser import SolParser
 from sol.builtin import apply_builtins
-from sol.interpreter import Interpreter
+from sol.codegen import Codegen
+from sol.runtime import Runtime
 
 
 def main():
     root = IoObject()
     state = IoState(root)
-    runtime = Interpreter(state)
+    codegen = Codegen()
+    runtime = Runtime(state)
 
     # Bootstrap builtin objects and slots
     apply_builtins(state)
@@ -29,7 +31,8 @@ def main():
             tokens = Lexer(source_line).iter_match_tokens()
 
             ast_root = SolParser(list(tokens)).program()
-            runtime.evaluate_ast_node(ast_root)
+            code = codegen.evaluate_ast_node(ast_root)
+            runtime.evaluate(code)
         except:
             traceback.print_exc()
 
