@@ -28,6 +28,12 @@ class Token:
             value=self.value,
         )
 
+    def __eq__(self, other):
+        return self.type == other.type and self.value == other.value
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Lexer:
     token_map = {
