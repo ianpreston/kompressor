@@ -18,7 +18,7 @@ def test_msg_pass():
     ]
 
     parser = SolParser(tokens)
-    root = parser.program()
+    root = parser.parse_program().root
 
     assert isinstance(root, MsgAstNode)
     assert root.target.ident == 'foo'
@@ -35,7 +35,7 @@ def test_invalid_msg_pass():
     parser = SolParser(tokens)
 
     with pytest.raises(Exception):
-        parser.program()
+        parser.parse_program()
 
 
 def test_assignment():
@@ -48,7 +48,7 @@ def test_assignment():
     ]
 
     parser = SolParser(tokens)
-    root = parser.program()
+    root = parser.parse_program().root
 
     assert isinstance(root, AssignAstNode)
 
@@ -68,7 +68,7 @@ def test_assignment_string():
     ]
 
     parser = SolParser(tokens)
-    root = parser.program()
+    root = parser.parse_program().root
 
     assert isinstance(root, AssignAstNode)
 
@@ -93,7 +93,7 @@ def test_argument():
     ]
 
     parser = SolParser(tokens)
-    root = parser.program()
+    root = parser.parse_program().root
 
     assert isinstance(root, MsgAstNode)
     assert root.target.ident == 'foo'
@@ -118,7 +118,7 @@ def test_multiple_const_arguments():
     ]
 
     parser = SolParser(tokens)
-    root = parser.program()
+    root = parser.parse_program().root
 
     assert isinstance(root, MsgAstNode)
     assert root.target.ident == 'foo'

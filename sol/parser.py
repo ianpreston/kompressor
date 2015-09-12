@@ -1,12 +1,17 @@
 from sol.lexer import Token, TokenType
 from sol.ast import (
     AstNode,
+    ProgramAstNode,
     MsgAstNode,
     IdentAstNode,
     AssignAstNode,
     ConstAstNode,
     ConstType,
 )
+
+
+class ParseError(Exception):
+    pass
 
 
 class ShiftReduceParser:
@@ -20,18 +25,17 @@ class ShiftReduceParser:
         # TODO - Struct for this
         self.reduce_rules = []
 
-    def program(self):
+    def parse(self):
+        # Shift-reduce until we run out of tokens
         while self.tokens:
             self.shift()
             self.reduce()
 
-        last_stack = None
-        while last_stack != self.stack:
-            last_stack = self.stack
+        # Reduce until we converge
+        last_stack_len = None
+        while last_stack_len != len(self.stack):
+            last_stack_len = len(self.stack)
             self.reduce()
-
-        # TODO - Need a reduce rule for a root AST node
-        return self.stack[0]
 
     def register_reduce_rule(self, expect, reduce_callable):
         self.reduce_rules.append((expect, reduce_callable))
@@ -119,6 +123,17 @@ class SolParser(ShiftReduceParser):
             [TokenType.RPAREN],
             self.parse_arg_list,
         )
+
+        # A Program is made up of either a message pass or an assignment
+        self.register_reduce_rule([MsgAstNode], (lambda node: ProgramAstNode(node)))
+        self.register_reduce_rule([AssignAstNode], (lambda node: ProgramAstNode(node)))
+
+    def parse_program(self):
+        self.parse()
+
+        if len(self.stack) != 1 or not isinstance(self.stack[0], ProgramAstNode):
+            raise ParseError('Unmatched input:', self.stack)
+        return self.stack.pop()
 
     def parse_arg_list(self, rparen):
         arguments = []

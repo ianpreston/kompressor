@@ -9,6 +9,12 @@ class AstNode:
     pass
 
 
+class ProgramAstNode(AstNode):
+    def __init__(self, root):
+        super(ProgramAstNode, self).__init__()
+        self.root = root
+
+
 class MsgAstNode(AstNode):
     def __init__(self, target, name, args=None):
         super(MsgAstNode, self).__init__()
@@ -26,6 +32,7 @@ class MsgAstNode(AstNode):
 
 class IdentAstNode(AstNode):
     def __init__(self, ident):
+        super(IdentAstNode, self).__init__()
         self.ident = ident
 
     def __repr__(self):

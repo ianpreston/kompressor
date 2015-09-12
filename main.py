@@ -30,7 +30,7 @@ def main():
         try:
             tokens = Lexer(source_line).iter_match_tokens()
 
-            ast_root = SolParser(list(tokens)).program()
+            ast_root = SolParser(list(tokens)).parse_program().root
             code = codegen.evaluate_ast_node(ast_root)
             runtime.evaluate(code)
         except:
