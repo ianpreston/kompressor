@@ -1,98 +1,152 @@
-from sol.pratt import PrattParser
-from sol.lexer import TokenType
+from sol.lexer import Token, TokenType
 from sol.ast import (
-    IdentAstNode,
+    AstNode,
     MsgAstNode,
+    IdentAstNode,
     AssignAstNode,
     ConstAstNode,
     ConstType,
 )
 
 
-class SolParser(PrattParser):
-    pass
+class ShiftReduceParser:
+    def __init__(self, tokens):
+        # Stack of tokens (terminals) and AstNodes (nonterminals)
+        self.stack = []
+
+        # Tokens remaining in the input program
+        self.tokens = tokens
+
+        # TODO - Struct for this
+        self.reduce_rules = []
+
+    def program(self):
+        while self.tokens:
+            self.shift()
+            self.reduce()
+
+        last_stack = None
+        while last_stack != self.stack:
+            last_stack = self.stack
+            self.reduce()
+
+        # TODO - Need a reduce rule for a root AST node
+        return self.stack[0]
+
+    def register_reduce_rule(self, expect, reduce_callable):
+        self.reduce_rules.append((expect, reduce_callable))
+
+    def shift(self):
+        self.stack.append(self.tokens.pop(0))
+
+    def reduce(self):
+        for expect, reduce_callable in self.reduce_rules:
+            tokens = self._cmp_and_pop(expect)
+            if not tokens:
+                continue
+            ast_node = reduce_callable(*tokens)
+            self.stack.append(ast_node)
+            return
+
+    def _cmp_stack_item(self, stack_item, proto):
+        """
+        Returns True if an item on the stack (either a nonterminal AstNode or
+        a terminal Token) matches `proto` (either an AstNode subclass or a
+        TokenType value).
+        """
+        if isinstance(proto, TokenType) and isinstance(stack_item, Token):
+            return stack_item.type == proto
+
+        if isinstance(proto, type) and isinstance(stack_item, AstNode):
+            return isinstance(stack_item, proto)
+
+        return False
+
+    def _cmp_stack(self, expect):
+        """
+        Returns True if the top of the stack matches the list `expect`. Each
+        item in `expect` is either a subclass of AstNode, or a TokenType
+        value.
+        """
+        if len(self.stack) < len(expect):
+            return False
+
+        # Grab the top N items from the stack
+        stack_top = self.stack[-len(expect):]
+
+        # Check that each item of the stack matches the expectation
+        matches = [self._cmp_stack_item(a, b) for a, b in zip(stack_top, expect)]
+        return len(matches) == sum(matches)
+
+    def _cmp_and_pop(self, expect):
+        if self._cmp_stack(expect):
+            tokens = [self.stack.pop() for x in expect]
+            tokens = reversed(tokens)
+            return tokens
+        return None
 
 
-def led_pass(parser, left, token):
-    expr = parser.expr(parser.lbp(token))
-    return MsgAstNode(
-        target=left,
-        name=expr,
-        args=None,
-    )
+class SolParser(ShiftReduceParser):
+    def __init__(self, *args, **kwargs):
+        super(SolParser, self).__init__(*args, **kwargs)
 
+        # x.y
+        self.register_reduce_rule(
+            [TokenType.IDENT, TokenType.PASS, TokenType.IDENT],
+            (lambda target, _, name: MsgAstNode(IdentAstNode(target.value), IdentAstNode(name.value))),
+        )
 
-def led_arg_list(parser, left, token):
-    args = []
+        # x.y.z
+        self.register_reduce_rule(
+            [MsgAstNode, TokenType.PASS, TokenType.IDENT],
+            (lambda target, _, name: MsgAstNode(target, IdentAstNode(name.value))),
+        )
 
-    while True:
-        expr = parser.expr(parser.lbp(token))
-        args.append(expr)
+        # x := y.z
+        self.register_reduce_rule(
+            [TokenType.IDENT, TokenType.ASSIGNMENT, AstNode],
+            (lambda target, _, source: AssignAstNode(IdentAstNode(target.value), source)),
+        )
 
-        if parser.token.type == TokenType.RPAREN:
-            break
+        # "x"
+        self.register_reduce_rule(
+            [TokenType.STRING],
+            (lambda const: ConstAstNode(ConstType.STRING, const.value)),
+        )
 
-        if parser.token.type == TokenType.COMMA:
-            parser.advance()
-            continue
+        # (x.y, foo.bar)
+        self.register_reduce_rule(
+            [TokenType.RPAREN],
+            self.parse_arg_list,
+        )
 
-        raise Exception('Invalid token in led_arg_list()', parser.token)
+    def parse_arg_list(self, rparen):
+        arguments = []
 
-    left.args = args
-    return left
+        # Walk down the stack from top to bottom, removing items until we
+        # reach a left paren
+        while True:
+            item = self.stack.pop()
 
+            if self._cmp_stack_item(item, TokenType.LPAREN):
+                break
 
-def led_assignment(parser, left, token):
-    expr = parser.expr(parser.lbp(token))
-    return AssignAstNode(left, expr)
+            if self._cmp_stack_item(item, TokenType.COMMA):
+                continue
 
+            if self._cmp_stack_item(item, AstNode):
+                arguments.insert(0, item)
+                continue
 
+            # TODO - Enforce commas between AstNodes
 
-SolParser.register_token(
-    TokenType.PASS,
-    lbp=9,
-    nud=None,
-    led=led_pass,
-)
+            raise Exception('Unexpected stack item', item)
 
-SolParser.register_token(
-    TokenType.IDENT,
-    lbp=8,
-    nud=(lambda token: IdentAstNode(token.value)),
-    led=(lambda parser, left, token: left),
-)
+        # After finding the left paren, expect a MsgAstNode (the message pass for
+        # which we are parsing arguments)
+        ast_node, = self._cmp_and_pop([MsgAstNode])
 
-SolParser.register_token(
-    TokenType.ASSIGNMENT,
-    lbp=7,
-    nud=None,
-    led=led_assignment,
-)
-
-SolParser.register_token(
-    TokenType.STRING,
-    lbp=6,
-    nud=(lambda token: ConstAstNode(ConstType.STRING, token.value)),
-    led=(lambda parser, left, token: left),
-)
-
-SolParser.register_token(
-    TokenType.INT,
-    lbp=6,
-    nud=(lambda token: ConstAstNode(ConstType.INT, token.value)),
-    led=(lambda parser, left, token: left),
-)
-
-SolParser.register_token(
-    TokenType.LPAREN,
-    lbp=1,
-    nud=None,
-    led=led_arg_list,
-)
-
-SolParser.register_token(
-    TokenType.RPAREN,
-    lbp=1,
-    nud=None,
-    led=(lambda parser, left, token: left),
-)
+        # Assign the parsed argument list to this MsgAstNode, and return it
+        # as the result of this reduction.
+        ast_node.args = arguments
+        return ast_node
