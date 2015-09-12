@@ -1,5 +1,5 @@
 import pytest
-from sol.parser import SolParser
+from sol.parser import SolParser, ParseError
 from sol.lexer import Token, TokenType
 from sol.ast import (
     MsgAstNode,
@@ -34,7 +34,19 @@ def test_invalid_msg_pass():
 
     parser = SolParser(tokens)
 
-    with pytest.raises(Exception):
+    with pytest.raises(ParseError):
+        parser.parse_program()
+
+
+def test_nonsense():
+    tokens = [
+        Token(TokenType.IDENT, 'foo'),
+        Token(TokenType.STRING, 'hello world'),
+    ]
+
+    parser = SolParser(tokens)
+
+    with pytest.raises(ParseError):
         parser.parse_program()
 
 
@@ -103,6 +115,22 @@ def test_argument():
     assert isinstance(root.args[0], MsgAstNode)
     assert root.args[0].target.ident == 'the_target'
     assert root.args[0].name.ident == 'the_name'
+
+
+def test_incomplete_arguments():
+    tokens = [
+        Token(TokenType.IDENT, 'foo'),
+        Token(TokenType.DOT, '.'),
+        Token(TokenType.IDENT, 'bar'),
+        Token(TokenType.LPAREN, '('),
+        Token(TokenType.IDENT, 'the_target'),
+        Token(TokenType.DOT, '.'),
+        Token(TokenType.IDENT, 'the_name'),
+    ]
+
+    parser = SolParser(tokens)
+    with pytest.raises(ParseError):
+        parser.parse_program()
 
 
 def test_multiple_const_arguments():
