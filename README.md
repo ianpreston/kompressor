@@ -5,7 +5,8 @@ Sol is a prototype language based on [Io Language](http://iolanguage.org/).
 ## Install & run
 
     $ git clone https://github.com/ianpreston/sol
-    $ cd sol
+    $ cd sol && virtualenv venv && source venv/bin/activate
+    $ py.test sol/
     $ python main.py
 
 
