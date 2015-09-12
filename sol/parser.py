@@ -92,19 +92,19 @@ class SolParser(ShiftReduceParser):
 
         # x.y
         self.register_reduce_rule(
-            [TokenType.IDENT, TokenType.PASS, TokenType.IDENT],
+            [TokenType.IDENT, TokenType.DOT, TokenType.IDENT],
             (lambda target, _, name: MsgAstNode(IdentAstNode(target.value), IdentAstNode(name.value))),
         )
 
         # x.y.z
         self.register_reduce_rule(
-            [MsgAstNode, TokenType.PASS, TokenType.IDENT],
+            [MsgAstNode, TokenType.DOT, TokenType.IDENT],
             (lambda target, _, name: MsgAstNode(target, IdentAstNode(name.value))),
         )
 
         # x := y.z
         self.register_reduce_rule(
-            [TokenType.IDENT, TokenType.ASSIGNMENT, AstNode],
+            [TokenType.IDENT, TokenType.OPER, AstNode],
             (lambda target, _, source: AssignAstNode(IdentAstNode(target.value), source)),
         )
 

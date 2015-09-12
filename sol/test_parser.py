@@ -13,7 +13,7 @@ from sol.ast import (
 def test_msg_pass():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
-        Token(TokenType.PASS, '.'),
+        Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'bar'),
     ]
 
@@ -41,9 +41,9 @@ def test_invalid_msg_pass():
 def test_assignment():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
-        Token(TokenType.ASSIGNMENT, ':='),
+        Token(TokenType.OPER, ':='),
         Token(TokenType.IDENT, 'bar'),
-        Token(TokenType.PASS, '.'),
+        Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'quux'),
     ]
 
@@ -63,7 +63,7 @@ def test_assignment():
 def test_assignment_string():
     tokens = [
         Token(TokenType.IDENT, 'str'),
-        Token(TokenType.ASSIGNMENT, ':='),
+        Token(TokenType.OPER, ':='),
         Token(TokenType.STRING, 'Hello, world!'),
     ]
 
@@ -83,11 +83,11 @@ def test_assignment_string():
 def test_argument():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
-        Token(TokenType.PASS, '.'),
+        Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'bar'),
         Token(TokenType.LPAREN, '('),
             Token(TokenType.IDENT, 'the_target'),
-            Token(TokenType.PASS, '.'),
+            Token(TokenType.DOT, '.'),
             Token(TokenType.IDENT, 'the_name'),
         Token(TokenType.RPAREN, ')'),
     ]
@@ -108,7 +108,7 @@ def test_argument():
 def test_multiple_const_arguments():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
-        Token(TokenType.PASS, '.'),
+        Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'bar'),
         Token(TokenType.LPAREN, '('),
             Token(TokenType.STRING, 'first argument'),

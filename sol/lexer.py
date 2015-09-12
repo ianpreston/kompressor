@@ -5,14 +5,14 @@ import enum
 class TokenType(enum.Enum):
     INVALID = -1
     (IGNORE,
-     PASS,
+     DOT,
      IDENT,
      LPAREN,
      RPAREN,
      COMMA,
      STRING,
      INT,
-     ASSIGNMENT,
+     OPER,
      SEMICOLON,
      EOF) = range(11)
 
@@ -39,13 +39,13 @@ class Lexer:
     token_map = {
         TokenType.IGNORE: r' ',
         TokenType.IDENT: r'[a-zA-Z][A-Za-z0-9_]*',
-        TokenType.PASS: r'\.',
+        TokenType.DOT: r'\.',
         TokenType.LPAREN: r'\(',
         TokenType.RPAREN: r'\)',
         TokenType.COMMA: r',',
         TokenType.STRING: r'"(.*?)"',
         TokenType.INT: r'[0-9]+',
-        TokenType.ASSIGNMENT: ':=',
+        TokenType.OPER: ':=',
         TokenType.SEMICOLON: r';',
     }
 

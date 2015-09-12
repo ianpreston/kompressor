@@ -10,9 +10,9 @@ def test_assignment():
 
     assert tokens == [
         Token(TokenType.IDENT, 'x'),
-        Token(TokenType.ASSIGNMENT, ':='),
+        Token(TokenType.OPER, ':='),
         Token(TokenType.IDENT, 'Object'),
-        Token(TokenType.PASS, '.'),
+        Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'clone'),
     ]
 
@@ -26,7 +26,7 @@ def test_string():
 
     assert tokens == [
         Token(TokenType.IDENT, 'x'),
-        Token(TokenType.ASSIGNMENT, ':='),
+        Token(TokenType.OPER, ':='),
         Token(TokenType.STRING, 'Hello world'),
     ]
 
