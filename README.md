@@ -2,6 +2,8 @@
 
 Sol is a prototype language based on [Io Language](http://iolanguage.org/).
 
+The codebase is pre-alpha. Everything's in flux and the code is pretty ugly. Use at your own risk.
+
 ## Install & run
 
     $ git clone https://github.com/ianpreston/sol
