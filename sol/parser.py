@@ -14,7 +14,7 @@ class ParseError(Exception):
     pass
 
 
-class ShiftReduceParser:
+class BaseParser:
     def __init__(self, tokens):
         # Stack of tokens (terminals) and AstNodes (nonterminals)
         self.stack = []
@@ -90,7 +90,7 @@ class ShiftReduceParser:
         return None
 
 
-class SolParser(ShiftReduceParser):
+class SolParser(BaseParser):
     def __init__(self, *args, **kwargs):
         super(SolParser, self).__init__(*args, **kwargs)
 
