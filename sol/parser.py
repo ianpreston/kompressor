@@ -7,6 +7,7 @@ from sol.ast import (
     AssignAstNode,
     ConstAstNode,
     ConstType,
+    ArgList,
 )
 
 
@@ -92,34 +93,46 @@ class SolParser(BaseParser):
     def __init__(self, *args, **kwargs):
         super(SolParser, self).__init__(*args, **kwargs)
 
-        # x.y
+        # MsgAstNode <- x . y
         self.register_reduce_rule(
             [TokenType.IDENT, TokenType.DOT, TokenType.IDENT],
             (lambda target, _, name: MsgAstNode(IdentAstNode(target.value), IdentAstNode(name.value))),
         )
 
-        # x.y.z
+        # MsgAstNode <- MsgAstNode . z
         self.register_reduce_rule(
             [MsgAstNode, TokenType.DOT, TokenType.IDENT],
             (lambda target, _, name: MsgAstNode(target, IdentAstNode(name.value))),
         )
 
-        # x := y.z
+        # AssignAstNode <- x := AstNode
         self.register_reduce_rule(
             [TokenType.IDENT, TokenType.OPER, AstNode],
             (lambda target, _, source: AssignAstNode(IdentAstNode(target.value), source)),
         )
 
-        # "x"
+        # ConstAstNode <- "x"
         self.register_reduce_rule(
             [TokenType.STRING],
             (lambda const: ConstAstNode(ConstType.STRING, const.value)),
         )
 
-        # (x.y, foo.bar)
+        # ArgList <- ( AstNode
         self.register_reduce_rule(
-            [TokenType.RPAREN],
-            self.parse_arg_list,
+            [TokenType.LPAREN, AstNode],
+            (lambda _, first_argument: ArgList([first_argument])),
+        )
+
+        # ArgList <- ArgList , AstNode
+        self.register_reduce_rule(
+            [ArgList, TokenType.COMMA, AstNode],
+            (lambda existing_arg_list, _, new_argument: ArgList(existing_arg_list.args + [new_argument])),
+        )
+
+        # MsgAstNode <- MsgAstNode ArgList )
+        self.register_reduce_rule(
+            [MsgAstNode, ArgList, TokenType.RPAREN],
+            (lambda message_pass, arg_list, _: MsgAstNode(message_pass.target, message_pass.name, arg_list.args)),
         )
 
         # A Program is made up of either a message pass or an assignment
@@ -132,34 +145,3 @@ class SolParser(BaseParser):
         if len(self.stack) != 1 or not isinstance(self.stack[0], ProgramAstNode):
             raise ParseError('Unmatched input:', self.stack)
         return self.stack.pop()
-
-    def parse_arg_list(self, rparen):
-        arguments = []
-
-        # Walk down the stack from top to bottom, removing items until we
-        # reach a left paren
-        while True:
-            item = self.stack.pop()
-
-            if self._cmp_stack_item(item, TokenType.LPAREN):
-                break
-
-            if self._cmp_stack_item(item, TokenType.COMMA):
-                continue
-
-            if self._cmp_stack_item(item, AstNode):
-                arguments.insert(0, item)
-                continue
-
-            # TODO - Enforce commas between AstNodes
-
-            raise Exception('Unexpected stack item', item)
-
-        # After finding the left paren, expect a MsgAstNode (the message pass for
-        # which we are parsing arguments)
-        ast_node, = self._cmp_and_pop([MsgAstNode])
-
-        # Assign the parsed argument list to this MsgAstNode, and return it
-        # as the result of this reduction.
-        ast_node.args = arguments
-        return ast_node

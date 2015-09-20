@@ -30,6 +30,12 @@ class MsgAstNode(AstNode):
         )
 
 
+class ArgList(AstNode):
+    def __init__(self, args=None):
+        super(AstNode, self).__init__()
+        self.args = args or []
+
+
 class IdentAstNode(AstNode):
     def __init__(self, ident):
         super(IdentAstNode, self).__init__()
