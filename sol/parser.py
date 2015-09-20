@@ -30,12 +30,7 @@ class BaseParser:
         while self.tokens:
             self.shift()
             self.reduce()
-
-        # Reduce until we converge
-        last_stack_len = None
-        while last_stack_len != len(self.stack):
-            last_stack_len = len(self.stack)
-            self.reduce()
+        self.reduce()
 
     def register_reduce_rule(self, expect, reduce_callable):
         self.reduce_rules.append((expect, reduce_callable))
@@ -44,13 +39,16 @@ class BaseParser:
         self.stack.append(self.tokens.pop(0))
 
     def reduce(self):
-        for expect, reduce_callable in self.reduce_rules:
-            tokens = self._cmp_and_pop(expect)
-            if not tokens:
-                continue
-            ast_node = reduce_callable(*tokens)
-            self.stack.append(ast_node)
-            return
+        while True:
+            for expect, reduce_callable in self.reduce_rules:
+                tokens = self._cmp_and_pop(expect)
+                if not tokens:
+                    continue
+                ast_node = reduce_callable(*tokens)
+                self.stack.append(ast_node)
+                break
+            else:
+                return
 
     def _cmp_stack_item(self, stack_item, proto):
         """
