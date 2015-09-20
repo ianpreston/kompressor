@@ -56,7 +56,7 @@ class Lexer:
 
     def match_token(self):
         if not len(self.source):
-            return
+            return Token(TokenType.EOF, 'EOF')
 
         for token_type, regex in self.token_map.items():
             match = re.match(regex, self.source)
@@ -77,7 +77,8 @@ class Lexer:
     def iter_match_tokens(self):
         while True:
             token = self.match_token()
-            if not token:
+            if token.type == TokenType.EOF:
+                yield token
                 return
             if token.type == TokenType.IGNORE:
                 continue

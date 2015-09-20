@@ -15,6 +15,7 @@ def test_msg_pass():
         Token(TokenType.IDENT, 'foo'),
         Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'bar'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -30,6 +31,7 @@ def test_invalid_msg_pass():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
         Token(TokenType.IDENT, 'bar'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -42,6 +44,7 @@ def test_nonsense():
     tokens = [
         Token(TokenType.IDENT, 'foo'),
         Token(TokenType.STRING, 'hello world'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -57,6 +60,7 @@ def test_assignment():
         Token(TokenType.IDENT, 'bar'),
         Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'quux'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -77,6 +81,7 @@ def test_assignment_string():
         Token(TokenType.IDENT, 'str'),
         Token(TokenType.OPER, ':='),
         Token(TokenType.STRING, 'Hello, world!'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -102,6 +107,7 @@ def test_argument():
             Token(TokenType.DOT, '.'),
             Token(TokenType.IDENT, 'the_name'),
         Token(TokenType.RPAREN, ')'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -126,6 +132,7 @@ def test_incomplete_arguments():
         Token(TokenType.IDENT, 'the_target'),
         Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'the_name'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)
@@ -143,6 +150,7 @@ def test_multiple_const_arguments():
             Token(TokenType.COMMA, ','),
             Token(TokenType.STRING, 'second argument'),
         Token(TokenType.RPAREN, ')'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
     parser = SolParser(tokens)

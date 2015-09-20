@@ -125,8 +125,8 @@ class SolParser(ShiftReduceParser):
         )
 
         # A Program is made up of either a message pass or an assignment
-        self.register_reduce_rule([MsgAstNode], (lambda node: ProgramAstNode(node)))
-        self.register_reduce_rule([AssignAstNode], (lambda node: ProgramAstNode(node)))
+        self.register_reduce_rule([MsgAstNode, TokenType.EOF], (lambda node, _: ProgramAstNode(node)))
+        self.register_reduce_rule([AssignAstNode, TokenType.EOF], (lambda node, _: ProgramAstNode(node)))
 
     def parse_program(self):
         self.parse()

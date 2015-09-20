@@ -14,6 +14,7 @@ def test_assignment():
         Token(TokenType.IDENT, 'Object'),
         Token(TokenType.DOT, '.'),
         Token(TokenType.IDENT, 'clone'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
 
@@ -28,6 +29,7 @@ def test_string():
         Token(TokenType.IDENT, 'x'),
         Token(TokenType.OPER, ':='),
         Token(TokenType.STRING, 'Hello world'),
+        Token(TokenType.EOF, 'EOF'),
     ]
 
 
@@ -42,4 +44,5 @@ def test_multiple_idents():
         Token(TokenType.IDENT, 'a'),
         Token(TokenType.IDENT, 'bar'),
         Token(TokenType.IDENT, 'quux'),
+        Token(TokenType.EOF, 'EOF'),
     ]
